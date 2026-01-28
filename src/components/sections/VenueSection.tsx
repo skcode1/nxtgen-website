@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { MapPin, Wifi, Coffee, BatteryCharging } from "lucide-react";
-import { LocationMap } from "@/components/ui/location-map";
 import ShinyText from "@/components/ui/ShinyText";
 import { HighlightCard } from "@/components/ui/highlight-card";
 
@@ -75,20 +74,28 @@ const VenueSection = () => {
         {/* Main Layout */}
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 lg:h-[700px]">
-            {/* LEFT: Map */}
+            {/* LEFT: Google Map Section - Dark Glassmorphism */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative w-full h-[400px] lg:h-full rounded-2xl overflow-hidden"
+              className="group relative h-[400px] lg:h-full rounded-2xl overflow-hidden bg-black/60 backdrop-blur-xl border border-white/20 shadow-2xl hover:shadow-glow hover:border-white/30"
             >
-              <LocationMap
-                layout="fill"
-                className="absolute inset-0"
-                location="IVB, Express Avenue, Chennai"
-                coordinates="Chennai, Tamil Nadu"
-                mapUrl="https://maps.app.goo.gl/8VFUnAmgvGFzqexj8"
+              {/* Shine overlay animation */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 group-hover:animate-shine z-10" />
+              
+              {/* Google Maps Embed */}
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.414496!2d80.260683414766!3d13.060804590799998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a525e7b3b3b3b3b%3A0x1234567890abcdef!2sExpress%20Avenue%20Mall!5e0!3m2!1sen!2sin!4v1738120000000!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                style={{ border: 0, borderRadius: '12px', filter: 'brightness(1.1) contrast(1.05)' }}
+                allowFullScreen={false}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="relative z-20 w-full h-full"
+                title="IVB Building - Express Avenue Venue Map"
               />
             </motion.div>
 
@@ -111,58 +118,73 @@ const VenueSection = () => {
             </div>
           </div>
         </div>
+
+        {/* Modal (kept OUTSIDE grid) */}
+        <AnimatePresence>
+          {activeAmenity && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveAmenity(null)}
+            >
+              <motion.div
+                className="w-full max-w-xl rounded-2xl border border-white/10 bg-background p-10 shadow-xl glass-card"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {activeAmenity.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {activeAmenity.details}
+                    </p>
+                  </div>
+                  <button
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setActiveAmenity(null)}
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div className="mt-6 flex items-center gap-3">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+                    {activeAmenity.icon}
+                  </span>
+                  <span className="text-lg font-semibold">
+                    {activeAmenity.metricValue}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {activeAmenity.metricLabel}
+                  </span>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Modal (kept OUTSIDE grid) */}
-      <AnimatePresence>
-        {activeAmenity && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setActiveAmenity(null)}
-          >
-            <motion.div
-              className="w-full max-w-xl rounded-2xl border border-white/10 bg-background p-10 shadow-xl glass-card"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              transition={{ type: "spring", stiffness: 300, damping: 24 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {activeAmenity.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {activeAmenity.details}
-                  </p>
-                </div>
-                <button
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                  onClick={() => setActiveAmenity(null)}
-                >
-                  Close
-                </button>
-              </div>
-
-              <div className="mt-6 flex items-center gap-3">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
-                  {activeAmenity.icon}
-                </span>
-                <span className="text-lg font-semibold">
-                  {activeAmenity.metricValue}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {activeAmenity.metricLabel}
-                </span>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Required animations */}
+      <style>{`
+        @keyframes shine {
+          0% { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: translateX(120%) skewX(-12deg); opacity: 0; }
+        }
+        .shadow-glow {
+          box-shadow:
+            0 25px 60px rgba(0, 0, 0, 0.85),
+            0 0 50px rgba(255, 255, 255, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+      `}</style>
     </section>
   );
 };
