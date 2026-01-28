@@ -140,23 +140,23 @@ const VisionSection = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 group-hover:animate-shine transition-all duration-700 z-10" />
 
               {/* Card content */}
-              <div className="relative z-20 h-full p-8 md:p-10 flex flex-col text-white overflow-hidden">
+              <div className="relative z-20 h-full p-6 md:p-8 flex flex-col text-white overflow-y-auto scrollbar-hide">
                 {/* Title */}
-                <div className="mb-6">
-                  <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] mb-3 text-center">
+                <div className="mb-4 md:mb-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] mb-2 text-center">
                     {card.title}
                   </h3>
                   <div className="w-full h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
                 </div>
 
                 {/* Items */}
-                <ul className="space-y-3 flex-1 min-h-0 overflow-y-auto pr-2">
+                <ul className="space-y-2 md:space-y-3 flex-1 min-h-0">
                   {card.items.map((item, itemIndex) => (
                     <li
                       key={itemIndex}
-                      className="text-sm md:text-base text-white/95 leading-relaxed flex items-start transition-colors"
+                      className="text-sm md:text-base text-white/95 leading-relaxed flex items-start"
                     >
-                      <span className="text-emerald-400 mr-3 flex-shrink-0 font-bold text-lg mt-0.5">
+                      <span className="text-emerald-400 mr-2 md:mr-3 flex-shrink-0 font-bold text-lg mt-0.5">
                         ✓
                       </span>
                       <span>{item}</span>
@@ -181,6 +181,15 @@ const VisionSection = () => {
             0 35px 70px -20px rgba(0, 0, 0, 0.8),
             0 0 60px rgba(255, 255, 255, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+        }
+        /* Hide scrollbars but keep scrollable */
+        .scrollbar-hide {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE 10+ */
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          width: 0;
+          height: 0;
         }
       `}</style>
     </section>
