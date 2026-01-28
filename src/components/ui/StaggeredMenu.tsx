@@ -1,5 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
+import React, { useCallback, useMemo, useRef, useState } from "react";
 
 export interface StaggeredMenuItem {
   label: string;
@@ -13,21 +12,16 @@ export interface StaggeredMenuSocialItem {
 }
 
 export interface StaggeredMenuProps {
-  position?: 'left' | 'right';
-  colors?: string[];
+  position?: "left" | "right";
   items?: StaggeredMenuItem[];
   socialItems?: StaggeredMenuSocialItem[];
   displaySocials?: boolean;
   displayItemNumbering?: boolean;
   className?: string;
-  logoUrl?: string;
   menuButtonColor?: string;
   openMenuButtonColor?: string;
   accentColor?: string;
-  isFixed?: boolean;
-  changeMenuColorOnOpen?: boolean;
-  closeOnClickAway?: boolean;
-  headerMode?: 'fixed' | 'static';
+  headerMode?: "fixed" | "static";
   headerClassName?: string;
   toggleClassName?: string;
   topOffsetPx?: number;
@@ -36,512 +30,156 @@ export interface StaggeredMenuProps {
 }
 
 export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
-  position = 'right',
-  colors = ['#8B5CF6', '#7C3AED'],
+  position = "right",
   items = [],
   socialItems = [],
   displaySocials = true,
   displayItemNumbering = true,
   className,
-  logoUrl = '/assets/logo/srm.png',
-  menuButtonColor = '#fff',
-  openMenuButtonColor = '#fff',
-  changeMenuColorOnOpen = true,
-  accentColor = '#8B5CF6',
-  isFixed = true,
-  closeOnClickAway = true,
-  headerMode = 'fixed',
+  menuButtonColor = "#fff",
+  openMenuButtonColor = "#fff",
+  accentColor = "#8B5CF6",
+  headerMode = "fixed",
   headerClassName,
   toggleClassName,
   topOffsetPx = 0,
   onMenuOpen,
-  onMenuClose
+  onMenuClose,
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
-  const openRef = useRef(false);
-
-  const panelRef = useRef<HTMLDivElement | null>(null);
-  const preLayersRef = useRef<HTMLDivElement | null>(null);
-  const preLayerElsRef = useRef<HTMLElement[]>([]);
-
-  const plusHRef = useRef<HTMLSpanElement | null>(null);
-  const plusVRef = useRef<HTMLSpanElement | null>(null);
-  const iconRef = useRef<HTMLSpanElement | null>(null);
-
-  const textInnerRef = useRef<HTMLSpanElement | null>(null);
-  const textWrapRef = useRef<HTMLSpanElement | null>(null);
-  const [textLines, setTextLines] = useState<string[]>(['Menu', 'Close']);
-
-  const openTlRef = useRef<gsap.core.Timeline | null>(null);
-  const closeTweenRef = useRef<gsap.core.Tween | null>(null);
-  const spinTweenRef = useRef<gsap.core.Timeline | null>(null);
-  const textCycleAnimRef = useRef<gsap.core.Tween | null>(null);
-  const colorTweenRef = useRef<gsap.core.Tween | null>(null);
-
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
-  const busyRef = useRef(false);
+  const isStaticHeader = headerMode === "static";
 
-  const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
-
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      const panel = panelRef.current;
-      const preContainer = preLayersRef.current;
-
-      const plusH = plusHRef.current;
-      const plusV = plusVRef.current;
-      const icon = iconRef.current;
-      const textInner = textInnerRef.current;
-
-      if (!panel || !plusH || !plusV || !icon || !textInner) return;
-
-      let preLayers: HTMLElement[] = [];
-      if (preContainer) {
-        preLayers = Array.from(preContainer.querySelectorAll('.sm-prelayer')) as HTMLElement[];
-      }
-      preLayerElsRef.current = preLayers;
-
-      const offscreen = position === 'left' ? -100 : 100;
-      gsap.set([panel, ...preLayers], { xPercent: offscreen });
-
-      gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
-      gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
-      gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
-      gsap.set(textInner, { yPercent: 0 });
-
-      if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: menuButtonColor });
-    });
-
-    return () => ctx.revert();
-  }, [menuButtonColor, position]);
-
-  const buildOpenTimeline = useCallback(() => {
-    const panel = panelRef.current;
-    const layers = preLayerElsRef.current;
-    if (!panel) return null;
-
-    openTlRef.current?.kill();
-    if (closeTweenRef.current) {
-      closeTweenRef.current.kill();
-      closeTweenRef.current = null;
-    }
-    itemEntranceTweenRef.current?.kill();
-
-    const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel')) as HTMLElement[];
-    const numberEls = Array.from(
-      panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item')
-    ) as HTMLElement[];
-    const socialTitle = panel.querySelector('.sm-socials-title') as HTMLElement | null;
-    const socialLinks = Array.from(panel.querySelectorAll('.sm-socials-link')) as HTMLElement[];
-
-    const layerStates = layers.map(el => ({ el, start: Number(gsap.getProperty(el, 'xPercent')) }));
-    const panelStart = Number(gsap.getProperty(panel, 'xPercent'));
-
-    if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 });
-    if (numberEls.length) gsap.set(numberEls, { ['--sm-num-opacity' as any]: 0 });
-    if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
-    if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
-
-    const tl = gsap.timeline({ paused: true });
-
-    layerStates.forEach((ls, i) => {
-      tl.fromTo(ls.el, { xPercent: ls.start }, { xPercent: 0, duration: 0.5, ease: 'power4.out' }, i * 0.07);
-    });
-
-    const lastTime = layerStates.length ? (layerStates.length - 1) * 0.07 : 0;
-    const panelInsertTime = lastTime + (layerStates.length ? 0.08 : 0);
-    const panelDuration = 0.65;
-
-    tl.fromTo(
-      panel,
-      { xPercent: panelStart },
-      { xPercent: 0, duration: panelDuration, ease: 'power4.out' },
-      panelInsertTime
-    );
-
-    if (itemEls.length) {
-      const itemsStartRatio = 0.15;
-      const itemsStart = panelInsertTime + panelDuration * itemsStartRatio;
-
-      tl.to(
-        itemEls,
-        { yPercent: 0, rotate: 0, duration: 1, ease: 'power4.out', stagger: { each: 0.1, from: 'start' } },
-        itemsStart
-      );
-
-      if (numberEls.length) {
-        tl.to(
-          numberEls,
-          { duration: 0.6, ease: 'power2.out', ['--sm-num-opacity' as any]: 1, stagger: { each: 0.08, from: 'start' } },
-          itemsStart + 0.1
-        );
-      }
-    }
-
-    if (socialTitle || socialLinks.length) {
-      const socialsStart = panelInsertTime + panelDuration * 0.4;
-      if (socialTitle) tl.to(socialTitle, { opacity: 1, duration: 0.5, ease: 'power2.out' }, socialsStart);
-      if (socialLinks.length) {
-        tl.to(
-          socialLinks,
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.55,
-            ease: 'power3.out',
-            stagger: { each: 0.08, from: 'start' },
-            onComplete: () => {
-              gsap.set(socialLinks, { clearProps: 'opacity' });
-            }
-          },
-          socialsStart + 0.04
-        );
-      }
-    }
-
-    openTlRef.current = tl;
-    return tl;
-  }, [position]);
-
-  const playOpen = useCallback(() => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    const tl = buildOpenTimeline();
-    if (tl) {
-      tl.eventCallback('onComplete', () => {
-        busyRef.current = false;
-      });
-      tl.play(0);
-    } else {
-      busyRef.current = false;
-    }
-  }, [buildOpenTimeline]);
-
-  const playClose = useCallback(() => {
-    openTlRef.current?.kill();
-    openTlRef.current = null;
-    itemEntranceTweenRef.current?.kill();
-
-    const panel = panelRef.current;
-    const layers = preLayerElsRef.current;
-    if (!panel) return;
-
-    const all: HTMLElement[] = [...layers, panel];
-    closeTweenRef.current?.kill();
-
-    const offscreen = position === 'left' ? -100 : 100;
-
-    closeTweenRef.current = gsap.to(all, {
-      xPercent: offscreen,
-      duration: 0.32,
-      ease: 'power3.in',
-      overwrite: 'auto',
-      onComplete: () => {
-        const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel')) as HTMLElement[];
-        if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 });
-
-        const numberEls = Array.from(
-          panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item')
-        ) as HTMLElement[];
-        if (numberEls.length) gsap.set(numberEls, { ['--sm-num-opacity' as any]: 0 });
-
-        const socialTitle = panel.querySelector('.sm-socials-title') as HTMLElement | null;
-        const socialLinks = Array.from(panel.querySelectorAll('.sm-socials-link')) as HTMLElement[];
-        if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
-        if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
-
-        busyRef.current = false;
-      }
-    });
-  }, [position]);
-
-  const animateIcon = useCallback((opening: boolean) => {
-    const icon = iconRef.current;
-    const h = plusHRef.current;
-    const v = plusVRef.current;
-    if (!icon || !h || !v) return;
-
-    spinTweenRef.current?.kill();
-
-    if (opening) {
-      gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
-      spinTweenRef.current = gsap
-        .timeline({ defaults: { ease: 'power4.out' } })
-        .to(h, { rotate: 45, duration: 0.5 }, 0)
-        .to(v, { rotate: -45, duration: 0.5 }, 0);
-    } else {
-      spinTweenRef.current = gsap
-        .timeline({ defaults: { ease: 'power3.inOut' } })
-        .to(h, { rotate: 0, duration: 0.35 }, 0)
-        .to(v, { rotate: 90, duration: 0.35 }, 0)
-        .to(icon, { rotate: 0, duration: 0.001 }, 0);
-    }
-  }, []);
-
-  const animateColor = useCallback(
-    (opening: boolean) => {
-      const btn = toggleBtnRef.current;
-      if (!btn) return;
-      colorTweenRef.current?.kill();
-      if (changeMenuColorOnOpen) {
-        const targetColor = opening ? openMenuButtonColor : menuButtonColor;
-        colorTweenRef.current = gsap.to(btn, { color: targetColor, delay: 0.18, duration: 0.3, ease: 'power2.out' });
+  const handleLinkClick = useCallback(
+    (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      if (href.startsWith("#")) {
+        const el = document.querySelector(href);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
       } else {
-        gsap.set(btn, { color: menuButtonColor });
+        window.location.href = href;
       }
-    },
-    [openMenuButtonColor, menuButtonColor, changeMenuColorOnOpen]
-  );
-
-  React.useEffect(() => {
-    if (toggleBtnRef.current) {
-      if (changeMenuColorOnOpen) {
-        const targetColor = openRef.current ? openMenuButtonColor : menuButtonColor;
-        gsap.set(toggleBtnRef.current, { color: targetColor });
-      } else {
-        gsap.set(toggleBtnRef.current, { color: menuButtonColor });
-      }
-    }
-  }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
-
-  const animateText = useCallback((opening: boolean) => {
-    const inner = textInnerRef.current;
-    if (!inner) return;
-
-    textCycleAnimRef.current?.kill();
-
-    const currentLabel = opening ? 'Menu' : 'Close';
-    const targetLabel = opening ? 'Close' : 'Menu';
-    const cycles = 3;
-
-    const seq: string[] = [currentLabel];
-    let last = currentLabel;
-    for (let i = 0; i < cycles; i++) {
-      last = last === 'Menu' ? 'Close' : 'Menu';
-      seq.push(last);
-    }
-    if (last !== targetLabel) seq.push(targetLabel);
-    seq.push(targetLabel);
-
-    setTextLines(seq);
-    gsap.set(inner, { yPercent: 0 });
-
-    const lineCount = seq.length;
-    const finalShift = ((lineCount - 1) / lineCount) * 100;
-
-    textCycleAnimRef.current = gsap.to(inner, {
-      yPercent: -finalShift,
-      duration: 0.5 + lineCount * 0.07,
-      ease: 'power4.out'
-    });
-  }, []);
-
-  const toggleMenu = useCallback(() => {
-    const target = !openRef.current;
-    openRef.current = target;
-    setOpen(target);
-
-    if (target) {
-      onMenuOpen?.();
-      playOpen();
-    } else {
-      onMenuClose?.();
-      playClose();
-    }
-
-    animateIcon(target);
-    animateColor(target);
-    animateText(target);
-  }, [playOpen, playClose, animateIcon, animateColor, animateText, onMenuOpen, onMenuClose]);
-
-  const closeMenu = useCallback(() => {
-    if (openRef.current) {
-      openRef.current = false;
       setOpen(false);
       onMenuClose?.();
-      playClose();
-      animateIcon(false);
-      animateColor(false);
-      animateText(false);
-    }
-  }, [playClose, animateIcon, animateColor, animateText, onMenuClose]);
+    },
+    [onMenuClose]
+  );
 
-  React.useEffect(() => {
-    if (!closeOnClickAway || !open) return;
+  const handleToggle = useCallback(() => {
+    setOpen((prev) => {
+      const next = !prev;
+      if (next) onMenuOpen?.();
+      else onMenuClose?.();
+      return next;
+    });
+  }, [onMenuClose, onMenuOpen]);
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(event.target as Node) &&
-        toggleBtnRef.current &&
-        !toggleBtnRef.current.contains(event.target as Node)
-      ) {
-        closeMenu();
-      }
-    };
+  const overlayStyle = useMemo(
+    () =>
+      isStaticHeader
+        ? {
+            top: topOffsetPx,
+            height: `calc(100dvh - ${topOffsetPx}px)`,
+          }
+        : { top: 0, height: "100dvh" },
+    [isStaticHeader, topOffsetPx]
+  );
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [closeOnClickAway, open, closeMenu]);
+  const panelStyle = useMemo(
+    () =>
+      isStaticHeader
+        ? {
+            top: topOffsetPx,
+            height: `calc(100dvh - ${topOffsetPx}px)`,
+          }
+        : { top: 0, height: "100dvh" },
+    [isStaticHeader, topOffsetPx]
+  );
 
-  const handleLinkClick = (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    if (href.startsWith('#')) {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      window.location.href = href;
-    }
-    closeMenu();
-  };
+  const slideTransform = useMemo(() => {
+    if (!isStaticHeader) return undefined;
+    if (open) return "translate3d(0,0,0)";
+    return position === "left" ? "translate3d(-100%,0,0)" : "translate3d(100%,0,0)";
+  }, [isStaticHeader, open, position]);
 
   return (
     <div
       className={`sm-scope z-50 ${
-        isFixed
-          ? open
-            ? headerMode === 'static'
-              ? 'relative w-auto h-auto overflow-visible'
-              : 'fixed top-0 left-0 w-screen h-screen overflow-hidden'
-            : headerMode === 'static'
-              ? 'relative w-auto h-auto overflow-visible'
-              : 'fixed top-0 left-0 pointer-events-none'
-          : 'w-full h-full'
-      }`}
-      style={isFixed && !open && headerMode === 'static' ? { width: 'auto', height: 'auto', overflow: 'visible', maxWidth: '100%' } : undefined}
+        isStaticHeader ? "relative" : "fixed top-0 left-0 pointer-events-none"
+      } ${className || ""}`}
+      style={isStaticHeader ? undefined : { width: "auto", height: "auto", overflow: "visible", maxWidth: "100%" }}
     >
       <div
-        className={
-          (className ? className + ' ' : '') + `staggered-menu-wrapper pointer-events-none ${open ? 'relative w-full h-full' : 'relative w-auto h-auto'} z-40`
-        }
-        style={accentColor ? ({ ['--sm-accent' as any]: accentColor } as React.CSSProperties) : undefined}
+        className="staggered-menu-wrapper pointer-events-none relative z-40"
         data-position={position}
         data-open={open || undefined}
+        style={accentColor ? ({ ["--sm-accent" as any]: accentColor } as React.CSSProperties) : undefined}
       >
-        {/* Backdrop below the topbar (only for headerMode=static) */}
-        {open && headerMode === 'static' && (
+        {/* Overlay */}
+        {open && (
           <button
             type="button"
             aria-label="Close menu"
-            onClick={closeMenu}
-            className="fixed left-0 right-0 bottom-0 z-[60] bg-black/35"
-            style={topOffsetPx ? { top: topOffsetPx, height: `calc(100dvh - ${topOffsetPx}px)` } : { top: 0, height: '100dvh' }}
+            onClick={() => {
+              setOpen(false);
+              onMenuClose?.();
+            }}
+            className="fixed left-0 right-0 bottom-0 z-[60] bg-black/40"
+            style={overlayStyle}
           />
         )}
 
-        <div
-          ref={preLayersRef}
-          className={`sm-prelayers ${headerMode === 'static' ? 'fixed' : 'absolute'} bottom-0 pointer-events-none z-[65] left-0 right-0 sm:left-auto sm:right-0 sm:w-[clamp(260px,38vw,420px)]`}
-          aria-hidden="true"
-          style={
-            topOffsetPx
-              ? {
-                  top: topOffsetPx,
-                  height: `calc(100dvh - ${topOffsetPx}px)`,
-                  left: 0,
-                  right: 0,
-                  width: '100vw',
-                  maxWidth: '100vw',
-                }
-              : { top: 0, height: '100dvh' }
-          }
-        >
-          {(() => {
-            const raw = colors && colors.length ? colors.slice(0, 4) : ['#1e1e22', '#35353c'];
-            let arr = [...raw];
-            if (arr.length >= 3) {
-              const mid = Math.floor(arr.length / 2);
-              arr.splice(mid, 1);
-            }
-            return arr.map((c, i) => (
-              <div
-                key={i}
-                className="sm-prelayer absolute top-0 right-0 h-full w-full translate-x-0"
-                style={{ background: c }}
-              />
-            ));
-          })()}
-        </div>
-
+        {/* Header / Toggle */}
         <header
           className={`staggered-menu-header ${
-            headerMode === 'static'
-              ? 'relative'
-              : (open ? 'absolute top-0 right-0' : 'fixed top-0 right-0')
-          } ${headerClassName || (headerMode === 'static' ? 'p-0' : 'p-4 sm:p-[2em]')} bg-transparent pointer-events-none z-20`}
+            headerMode === "static" ? "relative" : open ? "absolute top-0 right-0" : "fixed top-0 right-0"
+          } ${headerClassName || (headerMode === "static" ? "p-0" : "p-4 sm:p-[2em]")} bg-transparent pointer-events-none z-[75]`}
           aria-label="Main navigation header"
         >
           <button
             ref={toggleBtnRef}
             className={
               toggleClassName ||
-              `sm-toggle sm-toggle-glass relative hidden sm:inline-flex items-center gap-[0.39rem] rounded-full bg-white/10 backdrop-blur-md border border-white/15 px-[20.8px] py-[10.4px] cursor-pointer font-medium text-[20.8px] leading-none overflow-visible pointer-events-auto ${
-                open ? 'text-black' : 'text-white'
+              `sm-toggle sm-toggle-glass inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold leading-none pointer-events-auto outline-none focus:outline-none ${
+                open ? "text-black bg-white" : "text-white bg-white/10"
               }`
             }
-            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="staggered-menu-panel"
-            onClick={toggleMenu}
+            onClick={handleToggle}
             type="button"
+            style={{
+              color: open ? openMenuButtonColor : menuButtonColor,
+            }}
           >
-            <span
-              ref={textWrapRef}
-              className="sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]"
-              aria-hidden="true"
-            >
-              <span ref={textInnerRef} className="sm-toggle-textInner flex flex-col leading-none">
-                {textLines.map((l, i) => (
-                  <span className="sm-toggle-line block h-[1em] leading-none" key={i}>
-                    {l}
-                  </span>
-                ))}
-              </span>
-            </span>
-
-            <span
-              ref={iconRef}
-              className="sm-icon relative w-[18.2px] h-[18.2px] shrink-0 inline-flex items-center justify-center [will-change:transform]"
-              aria-hidden="true"
-            >
+            <span className="sm-toggle-line">{open ? "Close" : "Menu"}</span>
+            <span className="sm-icon relative w-4 h-4 shrink-0 inline-flex items-center justify-center">
               <span
-                ref={plusHRef}
-                className="sm-icon-line absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]"
+                className="sm-icon-line absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2"
+                style={{ transform: "translate(-50%,-50%) rotate(0deg)" }}
               />
               <span
-                ref={plusVRef}
-                className="sm-icon-line sm-icon-line-v absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]"
+                className="sm-icon-line sm-icon-line-v absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2"
+                style={{ transform: "translate(-50%,-50%) rotate(90deg)" }}
               />
             </span>
           </button>
         </header>
 
+        {/* Panel */}
         <aside
           id="staggered-menu-panel"
-          ref={panelRef}
-          className={`staggered-menu-panel ${headerMode === 'static' ? 'fixed' : 'absolute'} top-0 h-full bg-white flex flex-col left-0 right-0 z-[70] sm:left-auto sm:right-0 sm:w-[clamp(260px,38vw,420px)] ${
-            headerMode === 'static'
-              ? 'p-[1.25rem_1.25rem_1.25rem_1.25rem] sm:p-[6em_2em_2em_2em]'
-              : 'p-[6em_2em_2em_2em]'
-          } overflow-y-auto z-10 backdrop-blur-[12px] pointer-events-auto`}
-          style={
-            topOffsetPx
-              ? ({
-                  WebkitBackdropFilter: 'blur(12px)',
-                  top: topOffsetPx,
-                  height: `calc(100dvh - ${topOffsetPx}px)`,
-                  left: 0,
-                  right: 0,
-                  width: '100vw',
-                  maxWidth: '100vw',
-                  zIndex: 70,
-                } as React.CSSProperties)
-              : ({ WebkitBackdropFilter: 'blur(12px)', top: 0, height: '100dvh', left: 0, right: 0, width: '100vw', maxWidth: '100vw', zIndex: 70 } as React.CSSProperties)
-          }
+          className={`staggered-menu-panel fixed top-0 h-full bg-white flex flex-col left-0 right-0 w-screen z-[70] sm:left-auto sm:right-0 sm:w-[min(420px,90vw)] ${
+            headerMode === "static"
+              ? "p-[1.25rem_1.25rem_1.25rem_1.25rem] sm:p-[6em_2em_2em_2em]"
+              : "p-[6em_2em_2em_2em]"
+          } overflow-y-auto backdrop-blur-[12px] transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] pointer-events-auto`}
+          style={{
+            WebkitBackdropFilter: "blur(12px)",
+            ...panelStyle,
+            transform: slideTransform,
+          }}
           aria-hidden={!open}
         >
           <div className="sm-panel-inner flex-1 flex flex-col gap-5">
@@ -550,36 +188,31 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               role="list"
               data-numbering={displayItemNumbering || undefined}
             >
-              {items && items.length ? (
-                items.map((it, idx) => (
+              {(items && items.length ? items : [{ label: "No items", ariaLabel: "No items", link: "#" }]).map(
+                (it, idx) => (
                   <li className="sm-panel-itemWrap relative overflow-hidden leading-none" key={it.label + idx}>
                     <a
-                      className="sm-panel-item relative text-black font-semibold text-[2.25rem] sm:text-[4rem] cursor-pointer leading-[0.95] tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]"
+                      className="sm-panel-item relative text-black font-semibold text-[2.25rem] sm:text-[3.5rem] cursor-pointer leading-[0.95] tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]"
                       href={it.link}
                       onClick={(e) => handleLinkClick(it.link, e)}
                       aria-label={it.ariaLabel}
                       data-index={idx + 1}
                     >
-                      <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
-                        {it.label}
-                      </span>
+                      <span className="sm-panel-itemLabel inline-block">{it.label}</span>
                     </a>
+                    {displayItemNumbering && (
+                      <span className="absolute -right-4 top-1 text-sm text-[var(--sm-accent,#8B5CF6)] opacity-80">
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
+                    )}
                   </li>
-                ))
-              ) : (
-                <li className="sm-panel-itemWrap relative overflow-hidden leading-none" aria-hidden="true">
-                  <span className="sm-panel-item relative text-black font-semibold text-[2.25rem] sm:text-[4rem] cursor-pointer leading-[0.95] tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]">
-                    <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
-                      No items
-                    </span>
-                  </span>
-                </li>
+                )
               )}
             </ul>
 
             {displaySocials && socialItems && socialItems.length > 0 && (
               <div className="sm-socials mt-auto pt-8 flex flex-col gap-3" aria-label="Social links">
-                <h3 className="sm-socials-title m-0 text-base font-medium [color:var(--sm-accent,#ff0000)]">Socials</h3>
+                <h3 className="sm-socials-title m-0 text-base font-medium [color:var(--sm-accent,#8B5CF6)]">Socials</h3>
                 <ul
                   className="sm-socials-list list-none m-0 p-0 flex flex-row items-center gap-4 flex-wrap"
                   role="list"
@@ -590,7 +223,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         href={s.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="sm-socials-link text-[1.2rem] font-medium text-[#111] no-underline relative inline-block py-[2px] transition-[color,opacity] duration-300 ease-linear"
+                        className="sm-socials-link text-[1.1rem] font-medium text-[#111] no-underline relative inline-block py-[2px] transition-[color,opacity] duration-300 ease-linear"
                       >
                         {s.label}
                       </a>
@@ -605,55 +238,21 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
       <style>{`
 .sm-scope .staggered-menu-wrapper { position: relative; z-index: 40; pointer-events: none; }
-.sm-scope .staggered-menu-wrapper[data-open] { width: 100%; height: 100%; }
-.sm-scope .staggered-menu-wrapper:not([data-open]) { width: auto !important; height: auto !important; min-width: auto !important; min-height: auto !important; }
-.sm-scope .staggered-menu-header { background: transparent; pointer-events: none; z-index: 20; }
-.sm-scope .staggered-menu-wrapper[data-open] .staggered-menu-header { position: absolute; top: 0; right: 0; }
-.sm-scope .staggered-menu-wrapper:not([data-open]) .staggered-menu-header { position: fixed; top: 0; right: 0; }
+.sm-scope .staggered-menu-header { background: transparent; pointer-events: none; z-index: 75; }
 .sm-scope .staggered-menu-header > * { pointer-events: auto; }
-.sm-scope .sm-logo { display: flex; align-items: center; user-select: none; }
-.sm-scope .sm-logo-img { display: block; height: 32px; width: auto; object-fit: contain; }
-.sm-scope .sm-toggle { position: relative; display: inline-flex; align-items: center; gap: 0.39rem; cursor: pointer; color: #e9e9ef; font-weight: 500; line-height: 1; overflow: visible; }
-.sm-scope .sm-toggle-glass { background: transparent; border-color: transparent; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); transition: background 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease; }
-body.scrolled-top-glass .sm-scope .sm-toggle-glass { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.sm-scope .sm-toggle { color: #e9e9ef; font-weight: 600; line-height: 1; }
+.sm-scope .sm-toggle-glass { transition: background 0.25s ease, border-color 0.25s ease; }
 .sm-scope .sm-toggle:focus-visible { outline: none; }
-.sm-scope .sm-toggle-textWrap { position: relative; margin-right: 0.5em; display: inline-block; height: 1em; overflow: hidden; white-space: nowrap; width: var(--sm-toggle-width, auto); min-width: var(--sm-toggle-width, auto); }
-.sm-scope .sm-toggle-textInner { display: flex; flex-direction: column; line-height: 1; }
-.sm-scope .sm-toggle-line { display: block; height: 1em; line-height: 1; }
-.sm-scope .sm-icon { position: relative; width: 18.2px; height: 18.2px; flex: 0 0 18.2px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
-.sm-scope .sm-panel-itemWrap { position: relative; overflow: hidden; line-height: 1; }
-.sm-scope .sm-icon-line { position: absolute; left: 50%; top: 50%; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transform: translate(-50%, -50%); will-change: transform; }
-.sm-scope .staggered-menu-panel { position: absolute; top: 0; right: 0; height: 100%; background: white; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 6em 2em 2em 2em; overflow-y: auto; z-index: 10; opacity: 0; visibility: hidden; pointer-events: none; }
-.sm-scope .staggered-menu-wrapper[data-open] .staggered-menu-panel { opacity: 1; visibility: visible; pointer-events: auto; }
-.sm-scope [data-position='left'] .staggered-menu-panel { right: auto; left: 0; }
-.sm-scope .sm-prelayers { position: absolute; top: 0; right: 0; bottom: 0; pointer-events: none; z-index: 5; opacity: 0; visibility: hidden; }
-.sm-scope .staggered-menu-wrapper[data-open] .sm-prelayers { opacity: 1; visibility: visible; }
-.sm-scope [data-position='left'] .sm-prelayers { right: auto; left: 0; }
-.sm-scope .sm-prelayer { position: absolute; top: 0; right: 0; height: 100%; width: 100%; transform: translateX(0); }
-.sm-scope .sm-panel-inner { flex: 1; display: flex; flex-direction: column; gap: 1.25rem; }
-.sm-scope .sm-socials { margin-top: auto; padding-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem; }
-.sm-scope .sm-socials-title { margin: 0; font-size: 1rem; font-weight: 500; color: var(--sm-accent, #ff0000); }
-.sm-scope .sm-socials-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: row; align-items: center; gap: 1rem; flex-wrap: wrap; }
-.sm-scope .sm-socials-list .sm-socials-link { opacity: 1; transition: opacity 0.3s ease; }
-.sm-scope .sm-socials-list:hover .sm-socials-link:not(:hover) { opacity: 0.35; }
-.sm-scope .sm-socials-list:focus-within .sm-socials-link:not(:focus-visible) { opacity: 0.35; }
-.sm-scope .sm-socials-list .sm-socials-link:hover,
-.sm-scope .sm-socials-list .sm-socials-link:focus-visible { opacity: 1; }
-.sm-scope .sm-socials-link:focus-visible { outline: 2px solid var(--sm-accent, #ff0000); outline-offset: 3px; }
-.sm-scope .sm-socials-link { font-size: 1.2rem; font-weight: 500; color: #111; text-decoration: none; position: relative; padding: 2px 0; display: inline-block; transition: color 0.3s ease, opacity 0.3s ease; }
-.sm-scope .sm-socials-link:hover { color: var(--sm-accent, #ff0000); }
-@media (max-width: 768px) {
-  /* Keep toggle visible on mobile when used in a topbar */
+.sm-scope .sm-icon-line { background: currentColor; }
+.sm-scope .staggered-menu-panel { opacity: 0; visibility: hidden; pointer-events: none; }
+.sm-scope [data-open] .staggered-menu-panel { opacity: 1; visibility: visible; pointer-events: auto; }
+.sm-scope .sm-panel-item:hover { color: var(--sm-accent, #8B5CF6); }
+.sm-scope .sm-socials-link:hover { color: var(--sm-accent, #8B5CF6); }
+.sm-scope .sm-prelayers { opacity: 0; visibility: hidden; }
+.sm-scope [data-open] .sm-prelayers { opacity: 1; visibility: visible; }
+@media (max-width: 640px) {
+  .sm-scope .staggered-menu-panel { width: 100vw; left: 0; right: 0; }
 }
-.sm-scope .sm-panel-title { margin: 0; font-size: 1rem; font-weight: 600; color: #fff; text-transform: uppercase; }
-.sm-scope .sm-panel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.sm-scope .sm-panel-item { position: relative; color: #000; font-weight: 600; font-size: 4rem; cursor: pointer; line-height: 1; letter-spacing: -2px; text-transform: uppercase; transition: background 0.25s, color 0.25s; display: inline-block; text-decoration: none; padding-right: 1.4em; }
-.sm-scope .sm-panel-itemLabel { display: inline-block; will-change: transform; transform-origin: 50% 100%; }
-.sm-scope .sm-panel-item:hover { color: var(--sm-accent, #ff0000); }
-.sm-scope .sm-panel-list[data-numbering] { counter-reset: smItem; }
-.sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); position: absolute; top: 0.1em; right: 3.2em; font-size: 18px; font-weight: 400; color: var(--sm-accent, #ff0000); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); }
-@media (max-width: 1024px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; } .sm-scope .staggered-menu-wrapper[data-open] .sm-logo-img { filter: invert(100%); } }
-@media (max-width: 640px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; } .sm-scope .staggered-menu-wrapper[data-open] .sm-logo-img { filter: invert(100%); } }
       `}</style>
     </div>
   );
