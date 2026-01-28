@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState, useRef } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface LocationMapProps {
   location?: string;
@@ -24,27 +24,12 @@ export function LocationMap({
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const rotateX = useTransform(mouseY, [-50, 50], [8, -8]);
-  const rotateY = useTransform(mouseX, [-50, 50], [-8, 8]);
-
-  const springRotateX = useSpring(rotateX, { stiffness: 300, damping: 30 });
-  const springRotateY = useSpring(rotateY, { stiffness: 300, damping: 30 });
-
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    mouseX.set(e.clientX - centerX);
-    mouseY.set(e.clientY - centerY);
+    // 3D tilt disabled for cleaner UX
+    return;
   };
 
   const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
     setIsHovered(false);
   };
 
@@ -79,8 +64,6 @@ export function LocationMap({
           layout === "responsive" ? "h-full aspect-[12/7] w-auto max-w-full" : ""
         } ${layout === "fill" ? "h-full w-full" : ""}`}
         style={{
-          rotateX: springRotateX,
-          rotateY: springRotateY,
           transformStyle: "preserve-3d",
         }}
         animate={

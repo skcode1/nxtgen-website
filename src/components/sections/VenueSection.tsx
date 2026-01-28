@@ -73,7 +73,7 @@ const VenueSection = () => {
         </h2>
 
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[2.2fr_1fr] gap-8 lg:gap-12 items-stretch lg:h-[700px]">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1.2fr] gap-8 lg:gap-12 items-stretch lg:h-[700px]">
           {/* Left: Map */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -105,7 +105,7 @@ const VenueSection = () => {
                 icon={amenity.icon}
                 color="darkPurple"
                 hideButton
-                className="w-full h-full p-4"
+                className="w-full h-full p-4 max-w-none"
               />
             ))}
           </div>
