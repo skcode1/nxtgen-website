@@ -7,6 +7,9 @@ interface HeroSectionProps {
   onVideoFadeStart?: () => void;
 }
 
+const TEXUS_LOGO_DELAY = 10000; // ms, 5 seconds after mount
+const SRM_LOGO_DELAY = 10000;   // ms, 7 seconds after mount
+
 const HeroSection = ({ onVideoFadeStart }: HeroSectionProps = {} as HeroSectionProps) => {
   const [showExplore, setShowExplore] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
@@ -116,16 +119,16 @@ const HeroSection = ({ onVideoFadeStart }: HeroSectionProps = {} as HeroSectionP
 
   useEffect(() => {
     if (isMobile) return;
-    // Show logo and content after 9 seconds from page load
+    // Show SRM logo and content after SRM_LOGO_DELAY
     const logoTimer = setTimeout(() => {
       setShowLogo(true);
-      setShowExplore(true); // Show Explore immediately after logo
-    }, 9500);
+      setShowExplore(true);
+    }, SRM_LOGO_DELAY);
 
-    // Show TEXUS logo after 5 seconds
+    // Show TEXUS logo after TEXUS_LOGO_DELAY
     const texusTimer = setTimeout(() => {
       setShowTexusLogo(true);
-    }, 5000);
+    }, TEXUS_LOGO_DELAY);
 
     return () => {
       clearTimeout(logoTimer);
@@ -197,7 +200,7 @@ const HeroSection = ({ onVideoFadeStart }: HeroSectionProps = {} as HeroSectionP
           alt="NXTGEN Logo"
           className="relative z-20 mb-8 px-4 w-[80vw] max-w-[520px] sm:max-w-[720px] md:max-w-[900px] lg:max-w-[1152px] h-auto"
           loading="eager"
-          fetchpriority="high"
+          fetchPriority="high"
           initial={{ opacity: 0, y: 150 }}
           animate={{ 
             opacity: 1,

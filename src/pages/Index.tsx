@@ -24,6 +24,8 @@ const Footer = lazy(() => import("@/components/sections/Footer"));
 // Loading fallback component
 const SectionLoader = () => <div className="min-h-screen" />;
 
+const MENU_BUTTON_DELAY = 10000; // ms, 7 seconds after loading (adjust as needed)
+
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showFaultyTerminal, setShowFaultyTerminal] = useState(false);
@@ -31,9 +33,11 @@ const Index = () => {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [showMobileGate, setShowMobileGate] = useState(false);
   const [canContinue, setCanContinue] = useState(false);
+  const [showNav, setShowNav] = useState(false);
 
   const handleLoadingComplete = () => {
     setIsLoading(false);
+    setTimeout(() => setShowNav(true), MENU_BUTTON_DELAY);
   };
 
   const handleVideoFadeStart = () => {
@@ -61,12 +65,8 @@ const Index = () => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const handleChange = () => setReduceMotion(media.matches);
     handleChange();
-    if ("addEventListener" in media) {
-      media.addEventListener("change", handleChange);
-      return () => media.removeEventListener("change", handleChange);
-    }
-    media.addListener(handleChange);
-    return () => media.removeListener(handleChange);
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
   }, []);
 
   useEffect(() => {
@@ -74,12 +74,8 @@ const Index = () => {
     const media = window.matchMedia("(max-width: 768px)");
     const handleChange = () => setShowMobileGate(media.matches);
     handleChange();
-    if ("addEventListener" in media) {
-      media.addEventListener("change", handleChange);
-      return () => media.removeEventListener("change", handleChange);
-    }
-    media.addListener(handleChange);
-    return () => media.removeListener(handleChange);
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
   }, []);
 
   useEffect(() => {
@@ -157,8 +153,8 @@ const Index = () => {
       {/* Blur overlay above background, below content */}
       <BlurOverlay />
 
-      {/* Navbar */}
-      <Navbar />
+      {/* Navbar (menu button) only after showNav is true */}
+      {showNav && <Navbar />}
 
       {/* Main content */}
       <main className="relative z-10 flex min-h-screen flex-col">
