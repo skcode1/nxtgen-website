@@ -32,7 +32,16 @@ const PitchSection = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-2 mb-10 md:mb-12 place-items-center">
           {pitchItems.map((text, index) => (
-            <GlareCard key={index} className="p-6 flex items-center">
+            <GlareCard
+              key={index}
+              className="p-6 flex items-center"
+              disable3d
+              style={{
+                background: '#18181b',
+                borderRadius: '12px',
+                boxShadow: '8px 8px 0 0 #e5e7eb', // right & bottom, whitish gray (tailwind zinc-200)
+              }}
+            >
               <p className="text-left text-[clamp(0.8rem,2vw,1.5rem)] font-body text-foreground">
                 {text}
               </p>

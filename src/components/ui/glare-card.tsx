@@ -5,9 +5,13 @@ import type React from "react";
 export const GlareCard = ({
   children,
   className,
+  style,
+  disable3d = false,
 }: {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
+  disable3d?: boolean;
 }) => {
   const isPointerInside = useRef(false);
   const refElement = useRef<HTMLDivElement>(null);
@@ -35,7 +39,7 @@ export const GlareCard = ({
     "--duration": "300ms",
     "--foil-size": "100%",
     "--opacity": "0",
-    "--radius": "48px",
+    "--radius": "12px",
     "--easing": "ease",
     "--transition": "var(--duration) var(--easing)",
     transitionDuration: "var(--duration)",
@@ -69,58 +73,62 @@ export const GlareCard = ({
   };
   return (
     <div
-      style={containerStyle}
+      style={{ ...containerStyle, ...style }}
       className="relative isolate [contain:layout_style] [perspective:600px] transition-transform will-change-transform w-[320px] [aspect-ratio:17/21]"
       ref={refElement}
-      onPointerMove={(event) => {
-        const rotateFactor = 0.4;
-        const rect = event.currentTarget.getBoundingClientRect();
-        const position = {
-          x: event.clientX - rect.left,
-          y: event.clientY - rect.top,
-        };
-        const percentage = {
-          x: (100 / rect.width) * position.x,
-          y: (100 / rect.height) * position.y,
-        };
-        const delta = {
-          x: percentage.x - 50,
-          y: percentage.y - 50,
-        };
-
-        const { background, rotate, glare } = state.current;
-        background.x = 50 + percentage.x / 4 - 12.5;
-        background.y = 50 + percentage.y / 3 - 16.67;
-        rotate.x = -(delta.x / 3.5);
-        rotate.y = delta.y / 2;
-        rotate.x *= rotateFactor;
-        rotate.y *= rotateFactor;
-        glare.x = percentage.x;
-        glare.y = percentage.y;
-
-        updateStyles();
-      }}
-      onPointerEnter={() => {
-        isPointerInside.current = true;
-        if (refElement.current) {
-          setTimeout(() => {
-            if (isPointerInside.current) {
-              refElement.current?.style.setProperty("--duration", "0s");
-            }
-          }, 300);
-        }
-      }}
-      onPointerLeave={() => {
-        isPointerInside.current = false;
-        if (refElement.current) {
-          refElement.current.style.removeProperty("--duration");
-          refElement.current?.style.setProperty("--r-x", `0deg`);
-          refElement.current?.style.setProperty("--r-y", `0deg`);
-        }
-      }}
+      {...(!disable3d && {
+        onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => {
+          const rotateFactor = 0.4;
+          const rect = event.currentTarget.getBoundingClientRect();
+          const position = {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top,
+          };
+          const percentage = {
+            x: (100 / rect.width) * position.x,
+            y: (100 / rect.height) * position.y,
+          };
+          const delta = {
+            x: percentage.x - 50,
+            y: percentage.y - 50,
+          };
+          const { background, rotate, glare } = state.current;
+          background.x = 50 + percentage.x / 4 - 12.5;
+          background.y = 50 + percentage.y / 3 - 16.67;
+          rotate.x = -(delta.x / 3.5);
+          rotate.y = delta.y / 2;
+          rotate.x *= rotateFactor;
+          rotate.y *= rotateFactor;
+          glare.x = percentage.x;
+          glare.y = percentage.y;
+          updateStyles();
+        },
+        onPointerEnter: () => {
+          isPointerInside.current = true;
+          if (refElement.current) {
+            setTimeout(() => {
+              if (isPointerInside.current) {
+                refElement.current?.style.setProperty("--duration", "0s");
+              }
+            }, 300);
+          }
+        },
+        onPointerLeave: () => {
+          isPointerInside.current = false;
+          if (refElement.current) {
+            refElement.current.style.removeProperty("--duration");
+            refElement.current?.style.setProperty("--r-x", `0deg`);
+            refElement.current?.style.setProperty("--r-y", `0deg`);
+          }
+        },
+      })}
     >
       <div
-        className="h-full grid will-change-transform origin-center transition-transform [transform:rotateY(var(--r-x))_rotateX(var(--r-y))] rounded-[var(--radius)] border border-slate-800 hover:[--opacity:0.6] hover:[--duration:200ms] hover:[--easing:linear] hover:filter-none overflow-hidden"
+        className={
+          disable3d
+            ? "h-full grid will-change-transform origin-center transition-transform rounded-[var(--radius)] border border-slate-800 hover:[--opacity:0.6] hover:[--duration:200ms] hover:[--easing:linear] hover:filter-none overflow-hidden"
+            : "h-full grid will-change-transform origin-center transition-transform [transform:rotateY(var(--r-x))_rotateX(var(--r-y))] rounded-[var(--radius)] border border-slate-800 hover:[--opacity:0.6] hover:[--duration:200ms] hover:[--easing:linear] hover:filter-none overflow-hidden"
+        }
         style={{
           transitionDuration: "var(--duration)",
           transitionTimingFunction: "var(--easing)",
