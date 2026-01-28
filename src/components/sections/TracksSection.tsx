@@ -115,11 +115,6 @@ const TracksSection = () => {
                     <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight transition-opacity duration-300 group-hover:opacity-0">
                       {track.text}
                     </h3>
-
-                    {/* Hover Title */}
-                    <h3 className="absolute text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                      What is {track.text}?
-                    </h3>
                   </div>
 
                   {/* Hover Content */}
@@ -131,25 +126,6 @@ const TracksSection = () => {
                       <p className="text-sm md:text-base text-white/90 leading-relaxed line-clamp-[10]">
                         {track.description}
                       </p>
-                    </div>
-                  </div>
-
-                  {/* Hover Indicator */}
-                  <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:translate-x-0 translate-x-4">
-                    <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                      <svg
-                        className="w-5 h-5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 7l5 5m0 0l-5 5m5-5H6"
-                        />
-                      </svg>
                     </div>
                   </div>
                 </div>
