@@ -1,0 +1,258 @@
+@font-face {
+  font-family: 'Airstrike';
+  src: url('/assets/fonts/airstrikebold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Clash';
+  src: url('/assets/fonts/Clash.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* NXTGEN'26 Cyberpunk Design System */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: #000000;
+  }
+
+  :root {
+    /* Deep space dark theme */
+    --background: 230 25% 5%;
+    --foreground: 180 100% 95%;
+
+    --card: 230 30% 8%;
+    --card-foreground: 180 100% 95%;
+
+    --popover: 230 30% 8%;
+    --popover-foreground: 180 100% 95%;
+
+    /* Electric Cyan Primary */
+    --primary: 185 100% 50%;
+    --primary-foreground: 230 25% 5%;
+
+    /* Neon Magenta Secondary */
+    --secondary: 300 100% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted cyber tones */
+    --muted: 230 20% 15%;
+    --muted-foreground: 220 15% 60%;
+
+    /* Acid Green Accent */
+    --accent: 110 100% 55%;
+    --accent-foreground: 230 25% 5%;
+
+    /* Destructive */
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 230 30% 20%;
+    --input: 230 30% 15%;
+    --ring: 185 100% 50%;
+
+    --radius: 0.5rem;
+
+    /* Custom tokens */
+    --neon-cyan: 185 100% 50%;
+    --neon-magenta: 300 100% 45%;
+    --neon-green: 110 100% 55%;
+    --neon-amber: 40 100% 50%;
+    --cyber-blue: 220 80% 60%;
+
+    /* Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(185 100% 50%) 0%, hsl(300 100% 45%) 100%);
+    --gradient-glow: linear-gradient(180deg, hsl(185 100% 50% / 0.2) 0%, transparent 100%);
+    --gradient-card: linear-gradient(180deg, hsl(230 30% 12%) 0%, hsl(230 30% 8%) 100%);
+
+    /* Shadows */
+    --shadow-neon-cyan: 0 0 20px hsl(185 100% 50% / 0.5), 0 0 40px hsl(185 100% 50% / 0.3);
+    --shadow-neon-magenta: 0 0 20px hsl(300 100% 45% / 0.5), 0 0 40px hsl(300 100% 45% / 0.3);
+    --shadow-neon-green: 0 0 20px hsl(110 100% 55% / 0.5), 0 0 40px hsl(110 100% 55% / 0.3);
+
+    --sidebar-background: 230 25% 5%;
+    --sidebar-foreground: 180 100% 95%;
+    --sidebar-primary: 185 100% 50%;
+    --sidebar-primary-foreground: 230 25% 5%;
+    --sidebar-accent: 230 30% 15%;
+    --sidebar-accent-foreground: 180 100% 95%;
+    --sidebar-border: 230 30% 20%;
+    --sidebar-ring: 185 100% 50%;
+  }
+
+  .dark {
+    --background: 230 25% 5%;
+    --foreground: 180 100% 95%;
+    --card: 230 30% 8%;
+    --card-foreground: 180 100% 95%;
+    --popover: 230 30% 8%;
+    --popover-foreground: 180 100% 95%;
+    --primary: 185 100% 50%;
+    --primary-foreground: 230 25% 5%;
+    --secondary: 300 100% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 230 20% 15%;
+    --muted-foreground: 220 15% 60%;
+    --accent: 110 100% 55%;
+    --accent-foreground: 230 25% 5%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 30% 20%;
+    --input: 230 30% 15%;
+    --ring: 185 100% 50%;
+    --sidebar-background: 230 25% 5%;
+    --sidebar-foreground: 180 100% 95%;
+    --sidebar-primary: 185 100% 50%;
+    --sidebar-primary-foreground: 230 25% 5%;
+    --sidebar-accent: 230 30% 15%;
+    --sidebar-accent-foreground: 180 100% 95%;
+    --sidebar-border: 230 30% 20%;
+    --sidebar-ring: 185 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground font-body antialiased;
+    background: #000000;
+    font-family: 'Clash', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Airstrike', sans-serif;
+  }
+}
+
+@layer components {
+  .neon-text-cyan {
+    text-shadow: 0 0 10px hsl(var(--neon-cyan)), 0 0 20px hsl(var(--neon-cyan)), 0 0 40px hsl(var(--neon-cyan) / 0.5);
+  }
+
+  .neon-text-magenta {
+    text-shadow: 0 0 10px hsl(var(--neon-magenta)), 0 0 20px hsl(var(--neon-magenta)), 0 0 40px hsl(var(--neon-magenta) / 0.5);
+  }
+
+  .neon-text-green {
+    text-shadow: 0 0 10px hsl(var(--neon-green)), 0 0 20px hsl(var(--neon-green)), 0 0 40px hsl(var(--neon-green) / 0.5);
+  }
+
+  .neon-border {
+    box-shadow: 0 0 10px hsl(var(--neon-cyan) / 0.5), inset 0 0 10px hsl(var(--neon-cyan) / 0.1);
+  }
+
+  .glass-card {
+    background: linear-gradient(135deg, rgba(41, 18, 76, 0.4) 0%, rgba(41, 18, 76, 0.6) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--neon-cyan) / 0.2);
+  }
+
+
+  .cyber-grid {
+    background-image: 
+      linear-gradient(hsl(var(--neon-cyan) / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--neon-cyan) / 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .pixel-corners {
+    clip-path: polygon(
+      0 8px, 8px 8px, 8px 0,
+      calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px,
+      100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%,
+      8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px)
+    );
+  }
+
+  .shining-silver {
+    background: linear-gradient(
+      90deg,
+      #c0c0c0 0%,
+      #e8e8e8 25%,
+      #ffffff 50%,
+      #e8e8e8 75%,
+      #c0c0c0 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine-silver 3s linear infinite;
+    text-shadow: 0 0 20px rgba(192, 192, 192, 0.5), 0 0 40px rgba(192, 192, 192, 0.3);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  }
+}
+
+@layer utilities {
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      filter: drop-shadow(0 0 5px hsl(var(--neon-cyan)));
+    }
+    to {
+      filter: drop-shadow(0 0 20px hsl(var(--neon-cyan))) drop-shadow(0 0 40px hsl(var(--neon-cyan) / 0.5));
+    }
+  }
+
+  .animate-pulse-neon {
+    animation: pulse-neon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-neon {
+    0%, 100% {
+      opacity: 1;
+      filter: brightness(1);
+    }
+    50% {
+      opacity: 0.8;
+      filter: brightness(1.2);
+    }
+  }
+
+  .scanline {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(var(--neon-cyan) / 0.03) 2px,
+      hsl(var(--neon-cyan) / 0.03) 4px
+    );
+  }
+
+  /* Scroll lock for DomeGallery */
+  body.dg-scroll-lock {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    touch-action: none !important;
+    overscroll-behavior: contain !important;
+  }
+
+  @keyframes shine-silver {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+}
