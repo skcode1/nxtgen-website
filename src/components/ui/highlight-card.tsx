@@ -128,7 +128,7 @@ export const HighlightCard = React.forwardRef<HTMLDivElement, HighlightCardProps
             <motion.h3 variants={itemVariants} className="text-2xl font-bold tracking-tight">
               {title}
             </motion.h3>
-            <motion.p variants={itemVariants} className="mt-1 text-sm opacity-90 max-w-[80%]">
+            <motion.p variants={itemVariants} className="mt-1 text-base opacity-90 max-w-[80%]">
               {description}
             </motion.p>
           </div>

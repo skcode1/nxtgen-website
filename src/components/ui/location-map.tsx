@@ -64,7 +64,7 @@ export function LocationMap({
           layout === "responsive" ? "h-full aspect-[12/7] w-auto max-w-full" : ""
         } ${layout === "fill" ? "h-full w-full" : ""}`}
         style={{
-          transformStyle: "preserve-3d",
+          // In `fill` mode we intentionally fill the grid cell to avoid overflow.
         }}
         animate={
           layout === "fixed"
